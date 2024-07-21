@@ -78,7 +78,7 @@ app.get('/api/persons/:id', (request, response) => {
             })
           }
         
-        const post_name = body.name
+        
         const personsExists = persons.some(person => person.name.toLowerCase() === body.name.toLowerCase())
         if (personsExists) {
             return response.status(400).json(
