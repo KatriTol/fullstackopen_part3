@@ -53,6 +53,54 @@ app.get('/api/persons/:id', (request, response) => {
     }
     })
 
+    app.delete('/api/persons/:id', (request, response) => {
+        const id = request.params.id
+        persons = persons.filter(person => person.id !== id)
+      
+        response.status(204).end()
+      })
+
+      const generateId = () => {
+        return Math.floor(Math.random() * 1000000)
+      }
+      
+      app.post('/api/persons', (request, response) => {
+        const body = request.body
+      
+        if (!body.name) {
+          return response.status(400).json({ 
+            error: 'name missing' 
+          })
+        }
+        if (!body.number) {
+            return response.status(400).json({ 
+              error: 'number missing' 
+            })
+          }
+        
+        const post_name = body.name
+        const personsExists = persons.some(person => person.name.toLowerCase() === body.name.toLowerCase())
+        if (personsExists) {
+            return response.status(400).json(
+                {error: 'name must be unique'}
+            )
+
+        }
+
+
+
+      
+        const person = {
+          name: body.name,
+          number: body.number,
+          id: generateId(),
+        }
+      
+        persons = persons.concat(person)
+      
+        response.json(person)
+      })
+
   const PORT = 3001
   app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`)

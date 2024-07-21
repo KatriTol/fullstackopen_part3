@@ -1,0 +1,45 @@
+### Testaa uuden henkilön lisäämistä
+POST http://localhost:3001/api/persons
+Content-type: application/json
+
+{
+    "name": "Test Person",
+    "number": "040-556753"
+    
+
+}
+
+### Testaa olemassaolevan henkilön lisäämistä
+POST http://localhost:3001/api/persons
+Content-type: application/json
+
+{
+    "name": "ARTO HELLAS",
+    "number": "040-556753"
+    
+
+}
+
+### Testaa nimen puuttumista
+POST http://localhost:3001/api/persons
+Content-type: application/json
+
+{
+    "name": "",
+    "number": "040-123456"
+    
+
+}
+
+### Testaa numeron puuttumista
+POST http://localhost:3001/api/persons
+Content-type: application/json
+
+{
+    "name": "Ville Vallaton",
+    "number": ""
+    
+
+}
+
+
