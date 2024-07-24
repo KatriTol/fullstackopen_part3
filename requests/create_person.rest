@@ -42,4 +42,15 @@ Content-type: application/json
 
 }
 
+### Testaa renderiä
+POST https://fullstackopen-part3-phonebook-jjl6.onrender.com/
+Content-type: application/json
+
+{
+    "name": "Test Person",
+    "number": "040-556753"
+    
+
+}
+
 
