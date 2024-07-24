@@ -43,7 +43,7 @@ Content-type: application/json
 }
 
 ### Testaa renderiä
-POST https://fullstackopen-part3-phonebook-jjl6.onrender.com/
+POST https://fullstackopen-part3-phonebook-jjl6.onrender.com/api/persons
 Content-type: application/json
 
 {
