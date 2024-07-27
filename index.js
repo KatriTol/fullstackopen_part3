@@ -17,17 +17,18 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 let persons = [ 
 ]
 
-
 app.get('/info', (request, response) => {
-    const count = persons.length
+  Person.countDocuments({}).then(count => {
     const currentDate = new Date()
-  
     const content = `
       <p>Phonebook has info for ${count} people</p>
       <p>${currentDate}</p>
     `
     response.send(content)
   })
+})
+
+
 
 /*
 app.get('/api/persons', (request, response) => {
@@ -42,15 +43,24 @@ app.get('/api/persons', (request, response) => {
 
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const person = persons.find(person => person.id === id)
-    
-    if (person) {
-      response.json(person)
-    } else {
-      response.status(404).end()
-    }
+  const id = request.params.id
+  Person.findById(id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
     })
+    .catch(error => {
+      console.error('Error retrieving person by ID:', error)
+      response.status(400).send({ error: 'malformatted id' })
+    })
+
+}
+)
+
+
 
     app.delete('/api/persons/:id', (request, response) => {
         const id = request.params.id
