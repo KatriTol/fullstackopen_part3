@@ -35,9 +35,9 @@ app.get('/api/persons', (request, response) => {
     response.json(persons)
   })
 */
-  app.get('/api/persons', (request, response) => {
-    Person.find({}).then(persons => {
-      response.json(persons)
+app.get('/api/persons', (request, response) => {
+  Person.find({}).then(persons => {
+    response.json(persons)
     })
   })
 
@@ -62,53 +62,55 @@ app.get('/api/persons/:id', (request, response) => {
 
 
 
-    app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response) => {
         const id = request.params.id
         persons = persons.filter(person => person.id !== id)
       
         response.status(204).end()
       })
 
+      /*
       const generateId = () => {
         return Math.floor(Math.random() * 1000000)
       }
+    */
+app.post('/api/persons', (request, response) => {
+  const body = request.body
       
-      app.post('/api/persons', (request, response) => {
-        const body = request.body
-      
-        if (!body.name) {
-          return response.status(400).json({ 
-            error: 'name missing' 
-          })
-        }
-        if (!body.number) {
-            return response.status(400).json({ 
-              error: 'number missing' 
-            })
-          }
-        
-        
-        const personsExists = persons.some(person => person.name.toLowerCase() === body.name.toLowerCase())
-        if (personsExists) {
-            return response.status(400).json(
-                {error: 'name must be unique'}
-            )
-
-        }
-
-
-
-      
-        const person = {
-          name: body.name,
-          number: body.number,
-          id: generateId(),
-        }
-      
-        persons = persons.concat(person)
-      
-        response.json(person)
+    if (!body.name) {
+      return response.status(400).json({ 
+      error: 'name missing' 
       })
+      }
+    if (!body.number) {
+      return response.status(400).json({ 
+      error: 'number missing' 
+      })
+      }
+  // Tarkistetaan, onko tietokannassa jo henkilö samalla nimellä
+  Person.findOne({ name: body.name })
+  .then(existingPerson => {
+    // Jos henkilö löytyy, palautetaan virheilmoitus
+    if (existingPerson) {
+      return response.status(400).json({ error: 'name must be unique' })
+    }
+
+    // Jos henkilöä ei löydy, luodaan uusi henkilö ja tallennetaan tietokantaan
+    const person = new Person({
+      name: body.name,
+      number: body.number,
+    })
+
+    person.save()
+      .then(savedPerson => {
+        response.json(savedPerson) 
+      })
+      
+  })
+    })
+      
+    
+      
 
   const PORT = process.env.PORT
   // const PORT = process.env.PORT || 3001
