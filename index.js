@@ -4,6 +4,16 @@ const app = express()
 require('dotenv').config()
 
 const Person = require('./models/person')
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
 const cors = require('cors')
 app.use(express.static('dist'))
 
@@ -29,12 +39,6 @@ app.get('/info', (request, response) => {
 })
 
 
-
-/*
-app.get('/api/persons', (request, response) => {
-    response.json(persons)
-  })
-*/
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons)
@@ -42,7 +46,7 @@ app.get('/api/persons', (request, response) => {
   })
 
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
   Person.findById(id)
     .then(person => {
@@ -52,28 +56,22 @@ app.get('/api/persons/:id', (request, response) => {
         response.status(404).end()
       }
     })
-    .catch(error => {
-      console.error('Error retrieving person by ID:', error)
-      response.status(400).send({ error: 'malformatted id' })
-    })
+    .catch(error => next(error)
+    )
 
 }
 )
 
 
+app.delete('/api/persons/:id', (request, response,next) => {
+Person.findByIdAndDelete(request.params.id)
+.then(result => {
+  response.status(204).end()
+})
+.catch(error => next(error))
+})
 
-app.delete('/api/persons/:id', (request, response) => {
-        const id = request.params.id
-        persons = persons.filter(person => person.id !== id)
-      
-        response.status(204).end()
-      })
 
-      /*
-      const generateId = () => {
-        return Math.floor(Math.random() * 1000000)
-      }
-    */
 app.post('/api/persons', (request, response) => {
   const body = request.body
       
@@ -110,7 +108,7 @@ app.post('/api/persons', (request, response) => {
     })
       
     
-      
+  app.use(errorHandler)    
 
   const PORT = process.env.PORT
   // const PORT = process.env.PORT || 3001
