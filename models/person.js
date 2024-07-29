@@ -15,8 +15,15 @@ mongoose.connect(url)
 
 // Määrittelee Person-scheman, jossa on name ja number -kentät
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        minlength: 3,
+        required: true
+      },
+    number: {
+        type: String,
+        required: true
+      },
   })
 
 personSchema.set('toJSON', {
