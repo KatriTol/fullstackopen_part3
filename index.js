@@ -11,6 +11,15 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   }
+  else if (error.name === 'ValidationError') {
+    return response.status(400).send({ error: error.message })
+  } 
+  else if (error.isAxiosError) {
+    return response.status(error.response.status).json({ 
+      error: error.response.data.error || 'Axios error' 
+    })
+  }
+  
 
   next(error)
 }
@@ -27,7 +36,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 let persons = [ 
 ]
 
-app.get('/info', (request, response) => {
+app.get('/info', (request, response,next) => {
   Person.countDocuments({}).then(count => {
     const currentDate = new Date()
     const content = `
@@ -36,13 +45,15 @@ app.get('/info', (request, response) => {
     `
     response.send(content)
   })
+  .catch(error => next(error))
 })
 
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
   Person.find({}).then(persons => {
     response.json(persons)
     })
+    .catch(error => next(error))
   })
 
 
@@ -72,28 +83,23 @@ Person.findByIdAndDelete(request.params.id)
 })
 
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
-      
+  // alla olevat tarkistukset eivät toimi
     if (!body.name) {
       return response.status(400).json({ 
       error: 'name missing' 
       })
+      
       }
     if (!body.number) {
       return response.status(400).json({ 
       error: 'number missing' 
       })
+      
       }
-  // Tarkistetaan, onko tietokannassa jo henkilö samalla nimellä
-  Person.findOne({ name: body.name })
-  .then(existingPerson => {
-    // Jos henkilö löytyy, palautetaan virheilmoitus
-    if (existingPerson) {
-      return response.status(400).json({ error: 'name must be unique' })
-    }
-
-    // Jos henkilöä ei löydy, luodaan uusi henkilö ja tallennetaan tietokantaan
+      
+  
     const person = new Person({
       name: body.name,
       number: body.number,
@@ -102,12 +108,32 @@ app.post('/api/persons', (request, response) => {
     person.save()
       .then(savedPerson => {
         response.json(savedPerson) 
+        
       })
+      .catch(error => next(error))
+      
       
   })
-    })
+  
+
       
-    
+  
+  // PUT-reitti olemassa olevan henkilön päivittämiseksi
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedPerson => {
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error))
+})  
+
   app.use(errorHandler)    
 
   const PORT = process.env.PORT
