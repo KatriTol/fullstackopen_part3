@@ -13,13 +13,13 @@ const errorHandler = (error, request, response, next) => {
   }
   else if (error.name === 'ValidationError') {
     return response.status(400).send({ error: error.message })
-  } 
+  }
   else if (error.isAxiosError) {
-    return response.status(error.response.status).json({ 
-      error: error.response.data.error || 'Axios error' 
+    return response.status(error.response.status).json({
+      error: error.response.data.error || 'Axios error'
     })
   }
-  
+
 
   next(error)
 }
@@ -28,13 +28,12 @@ app.use(express.static('dist'))
 
 app.use(cors())
 app.use(express.json())
-morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
-
+// morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
+morgan.token('body', function (req) { return JSON.stringify(req.body) })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 // app.use(morgan(':body'))
 
-let persons = [ 
-]
+
 
 app.get('/info', (request, response,next) => {
   Person.countDocuments({}).then(count => {
@@ -45,16 +44,16 @@ app.get('/info', (request, response,next) => {
     `
     response.send(content)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 
 app.get('/api/persons', (request, response, next) => {
   Person.find({}).then(persons => {
     response.json(persons)
-    })
-    .catch(error => next(error))
   })
+    .catch(error => next(error))
+})
 
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -75,40 +74,40 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 
 app.delete('/api/persons/:id', (request, response,next) => {
-Person.findByIdAndDelete(request.params.id)
-.then(result => {
-  response.status(204).end()
-})
-.catch(error => next(error))
+  Person.findByIdAndDelete(request.params.id)
+    .then(() => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 })
 
 
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
-  
-  
-    const person = new Person({
-      name: body.name,
-      number: body.number,
-    })
 
-    person.save()
-      .then(savedPerson => {
-        response.json(savedPerson) 
-        
-      })
-      .catch(error => next(error))
-      
-      
+
+  const person = new Person({
+    name: body.name,
+    number: body.number,
   })
-  
 
-      
-  
-  // PUT-reitti olemassa olevan henkilön päivittämiseksi
+  person.save()
+    .then(savedPerson => {
+      response.json(savedPerson)
+
+    })
+    .catch(error => next(error))
+
+
+})
+
+
+
+
+// PUT-reitti olemassa olevan henkilön päivittämiseksi
 app.put('/api/persons/:id', (request, response, next) => {
   /*const body = request.body */
-  const {name, number}= request.body
+  const { name, number }= request.body
   /*const person = {
     name: body.name,
     number: body.number,
@@ -120,14 +119,13 @@ app.put('/api/persons/:id', (request, response, next) => {
       response.json(updatedPerson)
     })
     .catch(error => next(error))
-})  
+})
 
-  app.use(errorHandler)    
+app.use(errorHandler)
 
-  const PORT = process.env.PORT
-  // const PORT = process.env.PORT || 3001
-  // const PORT = 3001
-  app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`)
-    })
-    
+const PORT = process.env.PORT
+// const PORT = process.env.PORT || 3001
+// const PORT = 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
